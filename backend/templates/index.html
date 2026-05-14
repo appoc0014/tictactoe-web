@@ -1,0 +1,31 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tic Tac Toe</title>
+  <style>
+    body { background:#0b0f14; color:#e7eef7; font-family:sans-serif; text-align:center; }
+    .board { display:grid; grid-template-columns:repeat(3,110px); gap:12px; justify-content:center; }
+    .cell { height:110px; display:flex; align-items:center; justify-content:center;
+            background:#0b1220; border:1px solid #1f2a3a; font-size:56px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <input id="x" value="X_Player"> vs <input id="o" value="O_Player"><br><br>
+  <div class="board" id="board"></div>
+  <script>
+    const b=document.getElementById("board");let t="X",a=Array(9).fill("");
+    for(let i=0;i<9;i++){let d=document.createElement("div");d.className="cell";d.onclick=()=>move(i,d);b.appendChild(d);}
+    function win(){const l=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      for(const [x,y,z] of l) if(a[x]&&a[x]==a[y]&&a[x]==a[z]) return a[x]; return null;}
+    async function move(i,d){if(a[i])return;a[i]=t;d.textContent=t;
+      let w=win();if(w||a.every(x=>x)){
+        await fetch("/api/match",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({x_player:x.value,o_player:o.value,winner:w||"DRAW"})});
+        alert(w?w+" wins":"Draw");location.reload();}
+      t=t=="X"?"O":"X";}
+  </script>
+</body>
+</html>
