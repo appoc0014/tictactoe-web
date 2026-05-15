@@ -24,10 +24,24 @@ jobs:
         run: echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
             appoc14/tictactoe-web:${{ steps.vars.outputs.TAG }}
             appoc14/tictactoe-web:latest
+       
+      - name: Update image tag in Dell-Cluster repo
+        env:
+          TOKEN: ${{ secrets.CLUSTER_REPO_TOKEN }}
+          TAG: ${{ steps.vars.outputs.TAG }}
+        run: |
+          git clone https://appoc0014:${TOKEN}@github.com/appoc0014/Dell-Cluster.git
+          cd Dell-Cluster
+          sed -i "s|image: appoc14/tictactoe-web:.*|image: appoc14/tictactoe-web:${TAG}|" Helm/game/values.yaml
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add Helm/game/values.yaml
+          git commit -m "chore: update tictactoe-web image to ${TAG}"
+          git push
